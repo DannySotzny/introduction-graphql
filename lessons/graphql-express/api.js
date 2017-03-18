@@ -5,6 +5,9 @@ const schema = require('../graphql-runtime-schema/schema');
 const uuid = require('uuid');
 const PouchDB = require('pouchdb');
 const stephan = new PouchDB('stephan');
+stephan
+.sync('http://138.68.102.192:5984/stephan', {live: true, continuous: true})
+.on('change', msg => console.log(msg));
 
 const app = express();
 app.use(expressCORS());
