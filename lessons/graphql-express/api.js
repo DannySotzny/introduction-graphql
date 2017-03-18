@@ -20,6 +20,7 @@ const loader = (partition) => {
   const database = {
     calls: {
       upsert: input => stephan.put(Object.assign({_id: input.id || uuid.v1(), _rev: input.rev}, input)).then(data => Object.assign(data, input)),
+      remove: input => stephan.remove({_id: input.id, _rev: input.rev}).then(data => input),
       find: () => stephan.allDocs({include_docs: true}).then(data => data.rows.map(x => mapToReal(x.doc))),
     },
     eskalationen: Promise.resolve([

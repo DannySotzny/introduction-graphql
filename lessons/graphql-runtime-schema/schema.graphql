@@ -45,9 +45,10 @@ input CallInput {
 type Query {
  allCalls(filter: Filter): [Call]
  calls(machineId: ID): [Call]
- call(id: ID): Call
+ call(id: ID): Call 
 }
 
 type Mutation {
   upsertCall(input: CallInput): Call
+  deleteCall(input: CallInput): Call
 }

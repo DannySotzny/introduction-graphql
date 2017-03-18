@@ -3,7 +3,7 @@
 ## Install dependencies for this lesson
 
 ```bash
-npm i express express-graphql node-fetch
+npm i express express-graphql node-fetch uuid pouchdb 
 ```
 
 ## Testing

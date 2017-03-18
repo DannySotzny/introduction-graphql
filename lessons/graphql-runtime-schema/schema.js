@@ -22,6 +22,7 @@ function resolve () {
       },
       Mutation: {
         upsertCall: (source, args, context, info) => context.loader('calls').upsert(args.input),
+        deleteCall: (source, args, context, info) => context.loader('calls').remove(args.input),
       }
     };
 }
