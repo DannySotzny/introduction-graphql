@@ -10,14 +10,22 @@ module.exports = graphqlTools.makeExecutableSchema({
 
 function resolve () {
     return resolvers = {
-      SearchResult: {
-        content: (source, args, context, info) => source.content,
+      Escalation: {
+        id: (source, args, context, info) => source.id,
+        description: (source, args, context, info) => source.description,
+      },
+      Call: {
+        eskalationen: (source, args, context, info) => context.loader('eskalationen').then(data => fetchEscalationsByCallId(data, source.id)),
       },
       Query: {
-        search: (source, args, context, info) => ({ content: args.term }),
+        allCalls: (source, args, context, info) => context.loader('calls').find(),
       },
       Mutation: {
-        doSomething: (source, args, context, info) => 'Transaction ID',
-      },
+        upsertCall: (source, args, context, info) => context.loader('calls').upsert(args.input),
+      }
     };
+}
+
+function fetchEscalationsByCallId(data, callId) {
+  return Promise.resolve(data.filter(x => x.callId === callId));
 }

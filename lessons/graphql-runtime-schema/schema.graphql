@@ -1,11 +1,53 @@
-type SearchResult {
-  content: String
+type Machine {
+  id: ID
+  standort: String
+  kundennummer: ID
+  calls: [Call]
+}
+
+type Call {
+  id: ID
+  rev: String
+  type: Int
+  eskalationen(filter: Filter): [Escalation]
+  fieldMissions: [FieldMission]
+}
+
+type Escalation {
+  id: ID
+  description: String
+}
+
+type FieldMission {
+  start: String
+  ende: String
+  technician: Technician
+}
+
+type Technician {
+  department: String
+  name: String
+  organization: String 
+}
+
+input Filter {
+  skip: Int
+  limit: Int
+  sort:  String
+}
+
+input CallInput {
+  id: ID
+  rev: String
+  type: Int
 }
 
 type Query {
-  search(term: String): SearchResult
+ allCalls(filter: Filter): [Call]
+ calls(machineId: ID): [Call]
+ call(id: ID): Call
 }
 
 type Mutation {
-  doSomething(input: String): ID
+  upsertCall(input: CallInput): Call
 }
