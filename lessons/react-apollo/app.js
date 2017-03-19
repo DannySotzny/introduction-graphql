@@ -7,23 +7,32 @@ const client = new ApolloClient({
   networkInterface: createNetworkInterface({ uri: 'http://localhost:8888/graphql' }),
 })
 
-const MyComponent = props => {
+class MyComponent extends React.Component {
+  state = {
+    typeContent: 0,
+  }
 
-  const doSomething = props => {
-    props.mutate({ variables: { input: 'Hello World' } })
-    .then(({data}) => alert(`got data ${data.upsertCall}`))
+  doSomething () {
+    this.props.mutate({
+      variables: { input: { type: this.state.typeContent } },
+      refetchQueries: [{ query: FetchCallsQuery }],
+    })
+    .then((data) => alert('done'))
     .catch(error => alert('there was an error sending the query', error));
   }
 
-  return (
-    <div>
-      <h1>Simple GraphQL query result with React + Apollo</h1>
-      <button onClick={() => doSomething(props)}>Insert Call!</button>
-      <pre>
-        {JSON.stringify(props, null, 4)}
-      </pre>
-    </div>
-  )
+  render () {
+    return (
+      <div>
+        <h1>Simple GraphQL query result with React + Apollo</h1>
+        <input type="text" onBlur={e => this.setState({ typeContent: parseInt(e.target.value), })} />
+        <button onClick={() => this.doSomething()}>Insert Call!</button>
+        <pre>
+          {JSON.stringify(this.props, null, 4)}
+        </pre>
+      </div>
+    )
+  }
 }
 
 const FetchCallsQuery = gql`query fetch_all_calls {
@@ -39,8 +48,8 @@ const FetchCallsQuery = gql`query fetch_all_calls {
 }`
 const MyComponentWithData = graphql(FetchCallsQuery)(MyComponent)
 
-const MyMutation = gql`mutation insert_call {
-  upsertCall(input: {type: 9999}) {
+const MyMutation = gql`mutation insert_call($input: CallInput) {
+  upsertCall(input: $input) {
     id
     rev
     type
