@@ -16,7 +16,12 @@ const subscriptionManager = new graphqlSubscriptions.SubscriptionManager({
   setupFunctions: {
     upsertedCall() {
       return {
-        upsertedCall: () => true,
+        upsertedCall: {
+          filter: evt => {
+            console.log(JSON.stringify(evt))
+            return true
+          },
+        }
       };
     },
   },
@@ -26,9 +31,6 @@ module.exports = {
   schema,
   subscriptionManager,
 };
-
-// pubsub.publish('upsertedCall', { id: 'correlationID'})
-
 
 function resolve () {
     return resolvers = {
@@ -47,9 +49,7 @@ function resolve () {
         deleteCall: (source, args, context, info) => context.loader('calls').remove(args.input),
       },
       Subscription: {
-        upsertedCall: {
-          
-        }
+        upsertedCall: (source, args, context, info) => context.loader('calls').findById(source._id),
       }
     };
 }

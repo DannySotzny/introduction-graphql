@@ -1,6 +1,7 @@
+import clonedeep from 'lodash.clonedeep'
 import React from 'react'
 import { gql, graphql } from 'react-apollo'
-import { FetchCallsQuery, MyMutation } from '../queries/CallQueries'
+import { FetchCallsQuery, MyMutation, CallsChangedSubscription } from '../queries/CallQueries'
 
 class MyComponent extends React.Component {
   static propTypes = {
@@ -18,6 +19,17 @@ class MyComponent extends React.Component {
     })
     .then((data) => alert('done'))
     .catch(error => alert('there was an error sending the query', error));
+  }
+
+  componentDidMount () {
+    this.props.data.subscribeToMore({
+      document: CallsChangedSubscription,
+      updateQuery: (previousData, { subscriptionData }) => {
+        const result = clonedeep(previousData)
+        console.log(JSON.stringify(subscriptionData, null , 4))
+        return result
+      },
+    })
   }
 
   render () {

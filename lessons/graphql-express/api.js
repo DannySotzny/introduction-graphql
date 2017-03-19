@@ -6,10 +6,12 @@ const schema = require('../graphql-runtime-schema/schema');
 const uuid = require('uuid');
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-find'));
+const EventEmitter = require('events');
+const pouchdbEventEmitter = new EventEmitter();
 const stephan = new PouchDB('stephan');
 stephan
 .sync('http://138.68.102.192:5984/stephan', {live: true, continuous: true})
-.on('change', msg => console.log(msg));
+.on('change', msg => pouchdbEventEmitter.emit('event', msg.change.docs[0] || {}));
 
 const app = express();
 app.use(expressCORS());
@@ -27,6 +29,7 @@ const loader = (partition) => {
       upsert: input => stephan.put(Object.assign({_id: input.id || uuid.v1(), _rev: input.rev, $type: 'Call'}, input)).then(data => Object.assign(data, input)),
       remove: input => stephan.remove({_id: input.id, _rev: input.rev}).then(data => input),
       find: () => stephan.find({selector: {$type: 'Call'}}).then(data => data.docs.map(mapToReal)),
+      findById: id => stephan.find({selector: {$type: 'Call', _id: id}}).then(data => mapToReal(data.docs[0])),
     },
     eskalationen: {
       find: () => stephan.find({selector: {$type: 'Escalation'}}).then(data => data.docs.map(mapToReal)),
@@ -48,7 +51,8 @@ let server = undefined;
 module.exports = () => ({
   start: ({port}) => {
     return new Promise(resolve => {
-      server = app.listen(port, () => {      
+      server = app.listen(port, () => {
+        pouchdbEventEmitter.on('event', msg => schema.subscriptionManager.pubsub.publish('upsertedCall', msg)) 
         new expressGraphQLSubscriptionsWebSocketTransport.SubscriptionServer({
           onSubscribe: (msg, params) => Object.assign({}, params, { context: { loader } }),
           subscriptionManager: schema.subscriptionManager,

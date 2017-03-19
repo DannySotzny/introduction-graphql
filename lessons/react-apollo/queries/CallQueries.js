@@ -22,3 +22,15 @@ export const MyMutation = gql`mutation insert_call($input: CallInput) {
     }
   }
 }`
+
+export const CallsChangedSubscription = gql`subscription upserted_call {
+  upsertedCall {
+    id
+    rev
+    type
+    eskalationen {
+      id
+      description
+    }
+  }
+}`
