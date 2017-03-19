@@ -1,4 +1,5 @@
 const express = require('express');
+const expressGraphQLSubscriptionsWebSocketTransport = require('subscriptions-transport-ws');
 const expressCORS = require('cors');
 const expressGraphQL = require('express-graphql');
 const schema = require('../graphql-runtime-schema/schema');
@@ -37,7 +38,7 @@ const loader = (partition) => {
 }
 
 app.use('/graphql', expressGraphQL({
-  schema: schema,
+  schema: schema.schema,
   graphiql: true,
   pretty: true,
   context: { loader },
@@ -45,6 +46,19 @@ app.use('/graphql', expressGraphQL({
 
 let server = undefined;
 module.exports = () => ({
-  start: ({port}) => new Promise(resolve => server = app.listen(port, () => resolve(server))),
+  start: ({port}) => {
+    return new Promise(resolve => {
+      server = app.listen(port, () => {      
+        new expressGraphQLSubscriptionsWebSocketTransport.SubscriptionServer({
+          onSubscribe: (msg, params) => Object.assign({}, params, { context: { loader } }),
+          subscriptionManager: schema.subscriptionManager,
+          }, { server, path: '/graphql', }
+        );
+        resolve(server);
+      });
+    });
+  },
   stop: () => new Promise(resolve => server.close(() => resolve())),
 });
+
+

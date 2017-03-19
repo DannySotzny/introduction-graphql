@@ -2,11 +2,33 @@ const fs = require('fs');
 const path = require('path');
 const graphqlTools = require('graphql-tools');
 const definition = fs.readFileSync(path.join(__dirname, 'schema.graphql'));
+const graphqlSubscriptions = require('graphql-subscriptions');
+const pubsub = new graphqlSubscriptions.PubSub();
 
-module.exports = graphqlTools.makeExecutableSchema({
+const schema = graphqlTools.makeExecutableSchema({
   typeDefs: definition.toString(),
   resolvers: resolve(),
 });
+
+const subscriptionManager = new graphqlSubscriptions.SubscriptionManager({
+  schema,
+  pubsub,
+  setupFunctions: {
+    upsertedCall() {
+      return {
+        upsertedCall: () => true,
+      };
+    },
+  },
+});
+
+module.exports = {
+  schema,
+  subscriptionManager,
+};
+
+// pubsub.publish('upsertedCall', { id: 'correlationID'})
+
 
 function resolve () {
     return resolvers = {
