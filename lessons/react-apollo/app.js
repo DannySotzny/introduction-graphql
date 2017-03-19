@@ -27,6 +27,11 @@ class MyComponent extends React.Component {
         <h1>Simple GraphQL query result with React + Apollo</h1>
         <input type="text" onBlur={e => this.setState({ typeContent: parseInt(e.target.value), })} />
         <button onClick={() => this.doSomething()}>Insert Call!</button>
+
+        {
+          this.props.data.allCalls &&
+          this.props.data.allCalls.map(x => <div key={x.id}>{x.type}</div>)
+        }
         <pre>
           {JSON.stringify(this.props, null, 4)}
         </pre>
@@ -60,7 +65,7 @@ const MyMutation = gql`mutation insert_call($input: CallInput) {
 }`
 const MyComponentWithMutation = graphql(MyMutation)(MyComponent)
 
-const MyComponentWithDataAndMutation = graphql(FetchCallsQuery)(graphql(MyMutation)(MyComponent))
+const MyComponentWithDataAndMutation = graphql(FetchCallsQuery, {options: {pollInterval: 100000}})(graphql(MyMutation)(MyComponent))
 
 MyComponentWithMutation.propTypes = {
   mutate: PropTypes.func.isRequired,

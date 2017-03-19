@@ -5,10 +5,12 @@ type Machine {
   calls: [Call]
 }
 
+# foo bar
 type Call {
+  # foo
   id: ID
   rev: String
-  type: Int
+  type: Int @deprecated(reason: "sddjks - use this one ")
   eskalationen(filter: Filter): [Escalation]
   fieldMissions: [FieldMission]
 }
