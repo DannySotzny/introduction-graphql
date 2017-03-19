@@ -52,3 +52,7 @@ type Mutation {
   upsertCall(input: CallInput): Call
   deleteCall(input: CallInput): Call
 }
+
+type Subscription {
+  upsertedCall: Call
+}

@@ -15,7 +15,7 @@ function resolve () {
         description: (source, args, context, info) => source.description,
       },
       Call: {
-        eskalationen: (source, args, context, info) => context.loader('eskalationen').then(data => fetchEscalationsByCallId(data, source.id)),
+        eskalationen: (source, args, context, info) => context.loader('eskalationen').findByCallId(source.id),
       },
       Query: {
         allCalls: (source, args, context, info) => context.loader('calls').find(),
@@ -23,6 +23,11 @@ function resolve () {
       Mutation: {
         upsertCall: (source, args, context, info) => context.loader('calls').upsert(args.input),
         deleteCall: (source, args, context, info) => context.loader('calls').remove(args.input),
+      },
+      Subscription: {
+        upsertedCall: {
+          
+        }
       }
     };
 }

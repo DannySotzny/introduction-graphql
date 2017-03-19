@@ -4,6 +4,7 @@ const expressGraphQL = require('express-graphql');
 const schema = require('../graphql-runtime-schema/schema');
 const uuid = require('uuid');
 const PouchDB = require('pouchdb');
+PouchDB.plugin(require('pouchdb-find'));
 const stephan = new PouchDB('stephan');
 stephan
 .sync('http://138.68.102.192:5984/stephan', {live: true, continuous: true})
@@ -22,14 +23,14 @@ const mapToReal = doc => {
 const loader = (partition) => {
   const database = {
     calls: {
-      upsert: input => stephan.put(Object.assign({_id: input.id || uuid.v1(), _rev: input.rev}, input)).then(data => Object.assign(data, input)),
+      upsert: input => stephan.put(Object.assign({_id: input.id || uuid.v1(), _rev: input.rev, $type: 'Call'}, input)).then(data => Object.assign(data, input)),
       remove: input => stephan.remove({_id: input.id, _rev: input.rev}).then(data => input),
-      find: () => stephan.allDocs({include_docs: true}).then(data => data.rows.map(x => mapToReal(x.doc))),
+      find: () => stephan.find({selector: {$type: 'Call'}}).then(data => data.docs.map(mapToReal)),
     },
-    eskalationen: Promise.resolve([
-      {id: 1, description: 'foo', callId: 45},
-      {id: 2, description: 'bar', callId: 1},
-    ]),
+    eskalationen: {
+      find: () => stephan.find({selector: {$type: 'Escalation'}}).then(data => data.docs.map(mapToReal)),
+      findByCallId: callId => stephan.find({selector: {$type: 'Escalation', callId }}).then(data => data.docs.map(mapToReal)),
+    },
   };
 
   return database[partition] || Promise.resolve([]);
